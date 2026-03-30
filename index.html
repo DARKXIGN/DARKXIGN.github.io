@@ -74,11 +74,26 @@
 
     /* ABOUT */
     .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+    .about-left { display: flex; flex-direction: column; gap: 24px; }
+    .about-photo {
+      width: 100%; aspect-ratio: 4/3; border-radius: var(--radius);
+      background: var(--tag-bg); border: 2px dashed var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 10px; cursor: pointer; overflow: hidden; position: relative;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .about-photo:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .about-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .about-photo-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; }
+    .about-photo-icon { font-size: 2.2rem; opacity: 0.35; }
+    .about-photo-hint { font-size: 0.75rem; color: var(--text-muted); text-align: center; line-height: 1.6; }
+    .about-photo-hint strong { display: block; font-size: 0.82rem; color: var(--text); margin-bottom: 2px; }
     .about-text p { color: var(--text-muted); line-height: 1.82; font-size: 0.97rem; margin-bottom: 16px; }
     .about-facts { display: flex; flex-direction: column; gap: 14px; }
     .fact-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
     .fact-num { font-family: var(--font-display); font-size: 1.8rem; color: var(--text); line-height: 1; margin-bottom: 4px; }
     .fact-desc { font-size: 0.8rem; color: var(--text-muted); }
+    @media (max-width: 600px) { .about-grid { grid-template-columns: 1fr; } }
 
     /* TIMELINE */
     .timeline { display: flex; flex-direction: column; }
@@ -375,6 +390,33 @@ function Sec({ id, label, title, children }) {
   );
 }
 
+/* ── PHOTO UPLOAD ───────────────────────────────────── */
+function PhotoUpload() {
+  const [src, setSrc] = useState(null);
+  const inputRef = useRef(null);
+  const handleFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setSrc(url);
+  };
+  return (
+    <div className="about-photo" onClick={() => inputRef.current.click()}>
+      <input type="file" accept="image/*" ref={inputRef} onChange={handleFile} style={{display:"none"}} />
+      {src
+        ? <img src={src} alt="Profile" />
+        : <div className="about-photo-placeholder">
+            <div className="about-photo-icon">🖼️</div>
+            <div className="about-photo-hint">
+              <strong>Click to upload your photo</strong>
+              JPG, PNG, WEBP supported
+            </div>
+          </div>
+      }
+    </div>
+  );
+}
+
 /* ── PROJECT CARD ───────────────────────────────────── */
 function ProjCard({ p, t }) {
   const ref = useFadeIn();
@@ -470,7 +512,11 @@ function App() {
         {/* ABOUT */}
         <Sec id="about" label={t.aboutLabel} title={t.aboutTitle}>
           <div className="about-grid">
-            <div className="about-text">{t.aboutP.map((p,i)=><p key={i}>{p}</p>)}</div>
+            <div className="about-left">
+              {/* Photo placeholder — click to upload */}
+              <PhotoUpload />
+              <div className="about-text">{t.aboutP.map((p,i)=><p key={i}>{p}</p>)}</div>
+            </div>
             <div className="about-facts">
               {t.facts.map((f,i)=>{ const ref=useFadeIn(); return(<div className="fact-card" key={i} ref={ref}><div className="fact-num">{f.num}</div><div className="fact-desc">{f.desc}</div></div>); })}
             </div>
@@ -532,7 +578,6 @@ function App() {
                 <div className="edu-school">{e.school}</div>
                 <div className="edu-degree">{e.degree}</div>
                 <div>
-                  {e.gpa && <span className="edu-badge">{e.gpa}</span>}
                   <span className="edu-badge muted">{e.note}</span>
                 </div>
               </div>
