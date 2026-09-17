@@ -28,6 +28,10 @@ This site deploys automatically via **GitHub Pages**.
 
 All content lives inside `index.html` in the `T` (translations) object and the data arrays near the top of the `<script>` tag.
 
+**Keep `T.en` and `T.ko` arrays the same length** — both languages render through the same components.
+
+Sections in order: About -> Experience -> Projects -> Skills -> Education -> Certifications -> Leadership -> (Recommendations, hidden) -> Contact.
+
 ### Update project GitHub links
 Find each project in `T.en.projects` and `T.ko.projects` and replace the `github` field:
 ```js
@@ -36,7 +40,25 @@ Find each project in `T.en.projects` and `T.ko.projects` and replace the `github
 Set `github: null` for private repos — they'll show a 🔒 Private badge automatically.
 
 ### Add LinkedIn recommendations
-Find `T.en.recs` and `T.ko.recs` and replace the placeholder text with your actual recommendations.
+The Recommendations section is **hidden by default** because it only contains placeholder text.
+
+1. Replace the placeholder entries in `T.en.recs` and `T.ko.recs` with your real recommendations
+2. Set `const SHOW_RECS = false;` to `true` near the top of the `<script>` tag
+
+### Add relevant coursework to a school
+Add an optional `courses` array to any entry in `T.en.edu` / `T.ko.edu` — it renders as a
+"Relevant Coursework" block at the bottom of that card. Omit the field to hide the block.
+```js
+{ year:"Expected May 2027", school:"...", degree:"...", note:"Madison, WI",
+  courses:["Data Structures (CS 400)","Machine Learning"] }
+```
+
+### Add a leadership / service entry
+Add an object to both `T.en.leadership` and `T.ko.leadership`:
+```js
+{ period:"Sep 2022 - May 2023", org:"Club Name", role:"Secretary",
+  location:"\u{1F4CD} Oshkosh, WI", bullets:["What you did."] }
+```
 
 ### Add a new project
 Add an object to both `T.en.projects` and `T.ko.projects`:

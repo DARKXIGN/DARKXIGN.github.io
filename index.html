@@ -153,6 +153,9 @@
     .edu-degree { font-size: 0.81rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
     .edu-badge { display: inline-block; font-size: 0.73rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); border: 1px solid #BFCFED; margin-right: 6px; margin-bottom: 4px; }
     .edu-badge.muted { background: var(--tag-bg); color: var(--text-muted); border-color: var(--border); }
+    .edu-courses { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .edu-courses-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .edu-courses-list { font-size: 0.78rem; color: var(--text-muted); line-height: 1.65; }
 
     /* CERTS */
     .cert-card { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 12px; transition: box-shadow 0.2s; }
@@ -209,33 +212,49 @@
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
+/* Recommendations section is hidden until real LinkedIn recommendations
+   are added to T.en.recs / T.ko.recs. Flip to true to show it again. */
+const SHOW_RECS = false;
+
 /* ── TRANSLATIONS ────────────────────────────────────── */
 const T = {
   en: {
     nav: ["About","Experience","Projects","Skills","Education","Contact"],
     navIds: ["about","experience","projects","skills","education","contact"],
     eyebrow: "Available for Internship & Full-time",
-    heroTitle: "CS & Data Science @ UW–Madison · AI / ML Engineer",
-    heroDesc: "Building intelligent systems — from fine-tuned NLP models to secure mobile apps. Former Defense Communications Engineer with a background in high-stakes network security and cross-cultural military operations.",
+    heroTitle: "B.S. Computer Science (AI/ML) @ UW–Madison · SWE / ML Engineer",
+    heroDesc: "Building intelligent systems end-to-end — from crawling and data pipelines to fine-tuned NLP models, production REST APIs, and secure mobile apps. Most recently shipped ML models to production as a Software Engineering Intern at 2Digit. Former Defense Communications Engineer with a background in high-stakes network security and allied operations.",
     ctaContact: "Get in touch",
     metaLoc: "Location", metaGrad: "Graduation", metaFocus: "Focus", metaPhone: "Phone",
     metaFocusVal: "SWE · ML Engineering",
     aboutLabel: "About", aboutTitle: "Who I am",
     aboutP: [
-      "I'm a Computer Science & Data Science student at UW–Madison specializing in AI and machine learning. I enjoy building things end-to-end — from training NLP models to shipping full-stack web apps and secure iOS applications.",
+      "I'm a Computer Science student at UW–Madison on the AI/Machine Learning concentration. I enjoy building things end-to-end — from training NLP models to shipping full-stack web apps and secure iOS applications.",
+      "Most recently I interned at 2Digit, where I owned the automated crawling and data-collection pipelines behind news, corporate disclosures, and market price feeds — then trained NLP, time-series, and valuation models on that data and deployed them to production behind REST APIs with Docker.",
       "Before returning to school I served as a Defense Communication Intelligence Engineer (Sergeant) in the Republic of Korea Army, maintaining mission-critical fiber-optic networks across all branches and working alongside U.S. Forces Korea. That experience gave me a deep appreciation for reliability, security, and cross-functional teamwork under pressure.",
       "I'm fluent in English and Korean, and I'm actively seeking software engineering or ML engineering internships and full-time roles."
     ],
     facts: [
+      { num:"3 mo", desc:"SWE internship @ 2Digit — ML models in production" },
       { num:"18 mo", desc:"Military service — network security & allied ops" },
-      { num:"6+", desc:"Projects spanning ML, web, iOS, and NLP" },
+      { num:"5", desc:"Projects spanning ML, web, iOS, and NLP" },
       { num:"2", desc:"Languages — English & Korean (native)" },
     ],
     expLabel: "Experience", expTitle: "Work History",
     jobs: [
       {
+        period:"Jun 2026 – Aug 2026", company:"2Digit",
+        title:"Software Engineering Intern", location:"📍 Gyeonggi-do, South Korea",
+        bullets:[
+          "Owned automated crawling and data-collection pipelines ingesting news articles, corporate disclosures, and stock and cryptocurrency price feeds; cleaned and normalized raw data into model-ready training sets using Python, SQL, and large-scale data processing tooling.",
+          "Designed and trained production AI models — an NLP model classifying news text as positive or negative signal for a given equity, a time-series model forecasting future volatility from historical price patterns, and a valuation model computing fair value of assets — using PyTorch, TensorFlow, scikit-learn, and Hugging Face.",
+          "Deployed trained models to production servers and exposed them through REST APIs consumed by other internal services, containerizing workloads with Docker on cloud infrastructure.",
+          "Diagnosed and resolved root causes of post-deployment issues, and continuously retrained models on incoming user feedback and new market data to sustain predictive accuracy.",
+        ]
+      },
+      {
         period:"Nov 2023 – May 2025", company:"Ministry of National Defense, ROK",
-        title:"Defense Communications Intelligence Engineer — Sgt. / Squad Leader", location:"📍 South Korea",
+        title:"Defense Communication Intelligence Engineer — Sergeant / Squad Leader", location:"📍 South Korea",
         bullets:[
           "Engineered and maintained high-availability communications backbone across Army, Navy, Air Force, and Marines using fiber optic SDH/PDH systems at 99%+ uptime.",
           "Secured inter-branch and allied networks via VPN tunneling, AES/IPsec encryption, and dedicated hardware crypto devices.",
@@ -256,25 +275,39 @@ const T = {
     projLabel:"Projects", projTitle:"Things I've Built",
     ghBtn:"GitHub", demoBtn:"Demo", privateBtn:"Private",
     skillsLabel:"Skills", skillsTitle:"Technical Stack",
-    eduLabel:"Education", eduTitle:"Academic Background",
+    eduLabel:"Education", eduTitle:"Academic Background", eduCourseLabel:"Relevant Coursework",
     certLabel:"Certifications", certTitle:"Credentials",
+    leadLabel:"Leadership", leadTitle:"Leadership & Service",
     recLabel:"Recommendations", recTitle:"What People Say",
     recNotice:"⚠️ Placeholder cards — replace with your actual LinkedIn recommendations.",
     contactHeading:"Let's work", contactItalic:"together.",
     contactSub:"Open to software engineering and ML engineering internships and full-time roles. Don't hesitate to reach out!",
     footer:"© 2026 HyuckJoon Kwon · Built with React · Hosted on GitHub Pages",
     edu: [
-      { year:"Expected May 2027", school:"University of Wisconsin–Madison", degree:"B.S. Computer Science & Data Science — AI/ML Concentration", note:"Madison, WI" },
-      { year:"Sep 2021 – May 2023", school:"University of Wisconsin–Oshkosh", degree:"B.S. in Computer Science", note:"Oshkosh, WI" },
-      { year:"May – Jul 2025", school:"Seoul Capital Area ICT Innovation Square", degree:"AI & Deep Learning Professional Program", note:"Seoul, South Korea" },
+      { year:"Expected May 2027", school:"University of Wisconsin–Madison", degree:"B.S. in Computer Science — AI/Machine Learning Concentration", note:"Madison, WI", courses:["Data Structures (CS 400)","Machine Learning","Artificial Intelligence","Deep Learning","Big Data Systems (Hadoop, Spark)","Algorithms (CS 577)"] },
+      { year:"Sep 2021 – May 2023", school:"University of Wisconsin–Oshkosh", degree:"Associate of Science in Computer Science — transferred to UW–Madison", note:"Oshkosh, WI" },
+      { year:"May – Jul 2025", school:"Seoul Capital Area ICT Innovation Square", degree:"AI & Deep Learning Professional Program", note:"Seoul, South Korea", courses:["Logistic Regression","MLP","CNNs","NLP","Keras","Capstone AI Project"] },
     ],
-    certs:[{ icon:"🎓", name:"IBM AI Developer Professional Certificate", issuer:"Coursera / IBM" }],
+    certs:[
+      { icon:"🎓", name:"IBM AI Developer Professional Certificate", issuer:"Coursera / IBM" },
+      { icon:"🗣️", name:"English (Fluent) · Korean (Native)", issuer:"Language Proficiency" },
+    ],
+    leadership:[
+      { period:"Sep 2022 – May 2023", org:"Foxbyte — UW–Oshkosh CS Club", role:"Secretary", location:"📍 Oshkosh, WI", bullets:[
+        "Coordinated club participation in the CCSC-Midwest programming competition, managing registration, scheduling, and logistics.",
+        "Ran weekly coding workshops to prepare team members for the competition.",
+      ]},
+      { period:"Sep 2021 – May 2023", org:"Fox Gaming Club", role:"Co-Founder & Vice President", location:"📍 Oshkosh, WI", bullets:[
+        "Co-founded a gaming community and scaled membership to 50+ active members.",
+        "Organized regular tournaments and social mixers fostering an inclusive, engaged community.",
+      ]},
+    ],
     recs:[
       { id:1, quote:"Add your LinkedIn recommendation here. Copy and paste directly from your LinkedIn profile's Recommendations section.", name:"Recommender Name", role:"Title, Company" },
       { id:2, quote:"Add another recommendation from your LinkedIn profile here.", name:"Recommender Name", role:"Title, Company" },
     ],
     projects:[
-      { id:1, featured:true, name:"Pilot — Team Matching Platform", date:"Mar 2026", stack:["React","Supabase","Deno","PostgreSQL","EdgeFunctions"], desc:"Full-stack hackathon team-matching app enabling UW–Madison students to connect based on project interests and skill stacks. Deployed at CheeseHacks 2026. Real-time notifications via Supabase Webhooks and a category + skill-matching algorithm.", github:"https://github.com/DARKXIGN", demo:null },
+      { id:1, featured:true, name:"Pilot Episode — Team Matching Platform", date:"Mar 2026", stack:["React","Supabase","Deno","PostgreSQL","EdgeFunctions","EmailJS"], desc:"Full-stack hackathon team-matching app enabling UW–Madison students to connect based on project interests and skill stacks. Deployed at CheeseHacks 2026. Event-driven notifications built on Supabase Webhooks and Edge Functions reacting to PostgreSQL triggers in real time, with EmailJS auto-dispatching personalized match, application, and comment emails — plus a category + skill-matching algorithm that surfaces the most relevant opportunities.", github:"https://github.com/DARKXIGN", demo:null },
       { id:2, featured:false, name:"Pocket — Privacy iOS Wallet", date:"Jan – Mar 2026", stack:["Swift","AES-GCM","iOS Keychain","FaceID"], desc:"All-in-one iOS wallet with secure card storage and PDF document vault. AES-GCM encryption with iOS Keychain-backed key management, FaceID/TouchID biometrics, and auto-hide timeout.", github:"https://github.com/DARKXIGN", demo:null },
       { id:3, featured:false, name:"Automated PII Detection", date:"Sep – Dec 2025", stack:["Python","SpaCy","NER","NLP"], desc:"Named Entity Recognition pipeline to automatically detect and classify PII from unstructured text corpora with tokenization, custom entity labeling, and train/validation splitting.", github:"https://github.com/DARKXIGN", demo:null },
       { id:4, featured:false, name:"Korean Question Generation", date:"May – Aug 2025", stack:["KoBART","HuggingFace","KorQuAD","BLEU/ROUGE"], desc:"Fine-tuned a KoBART seq2seq model on 70,000 QA pairs from the KorQuAD dataset. End-to-end ML pipeline: data ingestion, tokenization, training loop, and BLEU/ROUGE evaluation.", github:"https://github.com/DARKXIGN", demo:null },
@@ -285,24 +318,36 @@ const T = {
     nav:["소개","경력","프로젝트","스킬","학력","연락처"],
     navIds:["about","experience","projects","skills","education","contact"],
     eyebrow:"인턴십 및 풀타임 포지션 지원 중",
-    heroTitle:"UW–Madison 컴퓨터공학 & 데이터사이언스 · AI / ML 엔지니어",
-    heroDesc:"NLP 모델 파인튜닝부터 보안 iOS 앱까지, 지능형 시스템을 엔드투엔드로 구축합니다. 전 국방부 통신정보 엔지니어로서 고위험 네트워크 보안 및 한미 연합 작전 경험을 보유하고 있습니다.",
+    heroTitle:"UW–Madison 컴퓨터공학 학사 (AI/ML 전공) · 소프트웨어 · ML 엔지니어",
+    heroDesc:"크롤링·데이터 파이프라인부터 NLP 모델 파인튜닝, 프로덕션 REST API, 보안 iOS 앱까지 지능형 시스템을 엔드투엔드로 구축합니다. 최근 2Digit에서 소프트웨어 엔지니어링 인턴으로 ML 모델을 실제 운영 환경에 배포했습니다. 전 국방부 통신정보 엔지니어로서 고위험 네트워크 보안 및 한미 연합 작전 경험을 보유하고 있습니다.",
     ctaContact:"연락하기",
     metaLoc:"위치", metaGrad:"졸업 예정", metaFocus:"관심 분야", metaPhone:"전화",
     metaFocusVal:"소프트웨어 · ML 엔지니어링",
     aboutLabel:"소개", aboutTitle:"저는 누구인가요",
     aboutP:[
-      "UW–Madison에서 AI/머신러닝 전공으로 컴퓨터공학 & 데이터사이언스를 공부하고 있습니다. NLP 모델 학습부터 풀스택 웹 앱, 보안 iOS 앱까지 처음부터 끝까지 만드는 것을 즐깁니다.",
+      "UW–Madison에서 AI/머신러닝을 전공하며 컴퓨터공학을 공부하고 있습니다. NLP 모델 학습부터 풀스택 웹 앱, 보안 iOS 앱까지 처음부터 끝까지 만드는 것을 즐깁니다.",
+      "최근에는 2Digit에서 인턴으로 근무하며 뉴스·공시·시장 시세 데이터를 수집하는 자동 크롤링 파이프라인을 담당했고, 그 데이터로 NLP·시계열·밸류에이션 모델을 학습해 Docker 기반 REST API로 운영 환경에 배포했습니다.",
       "복학 전에는 대한민국 육군에서 통신정보병(병장/분대장)으로 복무하며 육·해·공군 및 해병대에 걸친 광섬유 네트워크를 유지·관리하고 주한미군(USFK)과 협력했습니다. 이 경험을 통해 신뢰성, 보안, 압박 속의 팀워크의 가치를 깊이 체득했습니다.",
       "영어와 한국어를 유창하게 구사하며, 소프트웨어 또는 ML 엔지니어링 분야의 인턴십과 풀타임 포지션을 적극적으로 찾고 있습니다."
     ],
     facts:[
+      { num:"3개월", desc:"2Digit SWE 인턴 — ML 모델 프로덕션 배포" },
       { num:"18개월", desc:"군 복무 — 네트워크 보안 및 한미 연합 작전" },
-      { num:"6개+", desc:"ML, 웹, iOS, NLP 등 다양한 프로젝트" },
+      { num:"5개", desc:"ML, 웹, iOS, NLP 등 다양한 프로젝트" },
       { num:"2개", desc:"구사 언어 — 영어 & 한국어 (모국어)" },
     ],
     expLabel:"경력", expTitle:"경력 사항",
     jobs:[
+      {
+        period:"2026년 6월 – 8월", company:"2Digit",
+        title:"소프트웨어 엔지니어링 인턴", location:"📍 대한민국 경기도",
+        bullets:[
+          "뉴스 기사, 기업 공시, 주식·암호화폐 시세를 수집하는 자동 크롤링 및 데이터 수집 파이프라인을 주도하고, Python·SQL과 대규모 데이터 처리 도구로 원천 데이터를 학습 가능한 데이터셋으로 정제·정규화했습니다.",
+          "PyTorch, TensorFlow, scikit-learn, Hugging Face를 활용해 뉴스 텍스트를 특정 종목의 호재/악재로 분류하는 NLP 모델, 과거 가격 패턴으로 변동성을 예측하는 시계열 모델, 자산의 적정가치를 산출하는 밸류에이션 모델을 설계·학습했습니다.",
+          "학습된 모델을 운영 서버에 배포하고 REST API로 사내 서비스에 제공했으며, 클라우드 인프라에서 Docker로 워크로드를 컨테이너화했습니다.",
+          "배포 이후 발생한 이슈의 근본 원인을 진단·해결하고, 사용자 피드백과 신규 시장 데이터로 모델을 지속 재학습하여 예측 정확도를 유지했습니다.",
+        ]
+      },
       {
         period:"2023년 11월 – 2025년 5월", company:"대한민국 국방부",
         title:"통신정보 엔지니어 — 병장 / 분대장", location:"📍 대한민국",
@@ -326,25 +371,39 @@ const T = {
     projLabel:"프로젝트", projTitle:"만든 것들",
     ghBtn:"GitHub", demoBtn:"데모", privateBtn:"비공개",
     skillsLabel:"스킬", skillsTitle:"기술 스택",
-    eduLabel:"학력", eduTitle:"학력 사항",
+    eduLabel:"학력", eduTitle:"학력 사항", eduCourseLabel:"주요 수강 과목",
     certLabel:"자격증", certTitle:"보유 자격증",
+    leadLabel:"리더십", leadTitle:"리더십 & 활동",
     recLabel:"추천사", recTitle:"동료들의 이야기",
     recNotice:"⚠️ 예시 카드입니다. LinkedIn의 실제 추천사로 교체해주세요.",
     contactHeading:"함께", contactItalic:"일해요.",
     contactSub:"소프트웨어 및 ML 엔지니어링 분야의 인턴십과 풀타임 포지션에 열려 있습니다. 언제든지 연락주세요!",
     footer:"© 2026 권혁준 · React로 제작 · GitHub Pages 호스팅",
     edu:[
-      { year:"2027년 5월 졸업 예정", school:"위스콘신대학교 매디슨 (UW–Madison)", degree:"컴퓨터공학 & 데이터사이언스 학사 — AI/ML 전공", note:"위스콘신주 매디슨" },
-      { year:"2021년 9월 – 2023년 5월", school:"위스콘신대학교 오쉬코시 (UW–Oshkosh)", degree:"컴퓨터공학 학사", note:"위스콘신주 오쉬코시" },
-      { year:"2025년 5월 – 7월", school:"서울 수도권 ICT 이노베이션 스퀘어", degree:"AI & 딥러닝 전문가 과정", note:"대한민국 서울" },
+      { year:"2027년 5월 졸업 예정", school:"위스콘신대학교 매디슨 (UW–Madison)", degree:"컴퓨터공학 학사 — AI/머신러닝 전공", note:"위스콘신주 매디슨", courses:["자료구조 (CS 400)","머신러닝","인공지능","딥러닝","빅데이터 시스템 (Hadoop, Spark)","알고리즘 (CS 577)"] },
+      { year:"2021년 9월 – 2023년 5월", school:"위스콘신대학교 오쉬코시 (UW–Oshkosh)", degree:"컴퓨터공학 준학사 (A.S.) — UW–Madison 편입", note:"위스콘신주 오쉬코시" },
+      { year:"2025년 5월 – 7월", school:"서울 수도권 ICT 이노베이션 스퀘어", degree:"AI & 딥러닝 전문가 과정", note:"대한민국 서울", courses:["로지스틱 회귀","MLP","CNN","NLP","Keras","캡스톤 AI 프로젝트"] },
     ],
-    certs:[{ icon:"🎓", name:"IBM AI 개발자 전문가 자격증", issuer:"Coursera / IBM" }],
+    certs:[
+      { icon:"🎓", name:"IBM AI 개발자 전문가 자격증", issuer:"Coursera / IBM" },
+      { icon:"🗣️", name:"영어 (유창) · 한국어 (모국어)", issuer:"언어 능력" },
+    ],
+    leadership:[
+      { period:"2022년 9월 – 2023년 5월", org:"Foxbyte — UW–Oshkosh 컴퓨터공학 동아리", role:"총무", location:"📍 위스콘신주 오쉬코시", bullets:[
+        "CCSC-Midwest 프로그래밍 대회 참가를 총괄하며 등록, 일정 관리, 운영 전반을 담당했습니다.",
+        "팀원들의 대회 준비를 위한 주간 코딩 워크숍을 운영했습니다.",
+      ]},
+      { period:"2021년 9월 – 2023년 5월", org:"Fox Gaming Club", role:"공동설립자 & 부회장", location:"📍 위스콘신주 오쉬코시", bullets:[
+        "게이밍 커뮤니티를 공동 설립해 50명 이상의 활동 회원 규모로 성장시켰습니다.",
+        "정기 토너먼트와 친목 행사를 기획하여 포용적이고 활발한 커뮤니티를 만들었습니다.",
+      ]},
+    ],
     recs:[
       { id:1, quote:"LinkedIn 추천사를 여기에 추가하세요. LinkedIn 프로필의 추천사 섹션에서 직접 복사·붙여넣기 하시면 됩니다.", name:"추천인 이름", role:"직책, 회사" },
       { id:2, quote:"LinkedIn 프로필의 다른 추천사를 여기에 추가하세요.", name:"추천인 이름", role:"직책, 회사" },
     ],
     projects:[
-      { id:1, featured:true, name:"Pilot — 팀 매칭 플랫폼", date:"2026년 3월", stack:["React","Supabase","Deno","PostgreSQL","EdgeFunctions"], desc:"UW–Madison 학생들이 프로젝트 관심사와 기술 스택을 기반으로 팀을 구성할 수 있는 풀스택 해커톤 앱. CheeseHacks 2026 배포. Supabase Webhooks 기반 실시간 알림과 카테고리+스킬 매칭 알고리즘 구현.", github:"https://github.com/DARKXIGN", demo:null },
+      { id:1, featured:true, name:"Pilot Episode — 팀 매칭 플랫폼", date:"2026년 3월", stack:["React","Supabase","Deno","PostgreSQL","EdgeFunctions","EmailJS"], desc:"UW–Madison 학생들이 프로젝트 관심사와 기술 스택을 기반으로 팀을 구성할 수 있는 풀스택 해커톤 앱. CheeseHacks 2026 배포. Supabase Webhooks와 Edge Functions로 PostgreSQL 트리거에 실시간 반응하는 이벤트 기반 알림 아키텍처를 설계하고, EmailJS REST API로 매칭 추천·지원·댓글 알림 메일을 자동 발송. 카테고리+스킬 매칭 알고리즘으로 가장 적합한 기회를 제안합니다.", github:"https://github.com/DARKXIGN", demo:null },
       { id:2, featured:false, name:"Pocket — 프라이버시 iOS 지갑", date:"2026년 1월 – 3월", stack:["Swift","AES-GCM","iOS Keychain","FaceID"], desc:"카드 보안 저장 및 PDF 문서 보관을 지원하는 iOS 지갑 앱. iOS Keychain 기반 AES-GCM 암호화, FaceID/TouchID 생체인증, 비활성 자동 숨김 기능 구현.", github:"https://github.com/DARKXIGN", demo:null },
       { id:3, featured:false, name:"자동 PII 탐지 & 분류", date:"2025년 9월 – 12월", stack:["Python","SpaCy","NER","NLP"], desc:"SpaCy를 이용한 개인정보(이름, 이메일, 전화번호) 자동 탐지·분류 NER 파이프라인. 토크나이징, 커스텀 엔티티 레이블링, 훈련/검증 분리 전처리 파이프라인 구축.", github:"https://github.com/DARKXIGN", demo:null },
       { id:4, featured:false, name:"한국어 질문 생성 모델", date:"2025년 5월 – 8월", stack:["KoBART","HuggingFace","KorQuAD","BLEU/ROUGE"], desc:"KorQuAD 데이터셋의 7만 개 QA 쌍으로 KoBART seq2seq 모델 파인튜닝. 데이터 수집, 토크나이징, 학습, BLEU/ROUGE 평가까지 엔드투엔드 ML 파이프라인.", github:"https://github.com/DARKXIGN", demo:null },
@@ -358,7 +417,7 @@ const SKILLS = [
   { icon:"🤖", label:"ML / AI", items:["PyTorch","TensorFlow/Keras","SpaCy","HuggingFace","NumPy","Pandas","scikit-learn"] },
   { icon:"🌐", label:"Web / Mobile", items:["React","Supabase","Deno","Node.js","REST APIs","Docker","nginx"] },
   { icon:"🔐", label:"Security", items:["VPN/IPsec","AES-GCM","iOS Keychain","SNMP","Crypto Devices"] },
-  { icon:"🛠️", label:"Tools", items:["Git/GitHub","VS Code","Google Colab","Anaconda","OLlama","Unity"] },
+  { icon:"🛠️", label:"Tools", items:["Git/GitHub","VS Code","Google Colab","Anaconda","Ollama","Unity","Google Workspace"] },
 ];
 
 /* ── FADE-IN HOOK ───────────────────────────────────── */
@@ -578,6 +637,12 @@ function App() {
                 <div>
                   <span className="edu-badge muted">{e.note}</span>
                 </div>
+                {e.courses && (
+                  <div className="edu-courses">
+                    <div className="edu-courses-label">{t.eduCourseLabel}</div>
+                    <div className="edu-courses-list">{e.courses.join(" · ")}</div>
+                  </div>
+                )}
               </div>
             ); })}
           </div>
@@ -597,16 +662,19 @@ function App() {
 
         <hr className="divider"/>
 
-        {/* RECOMMENDATIONS */}
-        <Sec id="recommendations" label={t.recLabel} title={t.recTitle}>
-          <div className="rec-notice">{t.recNotice}</div>
-          <div className="recs-grid">
-            {t.recs.map(r=>{ const ref=useFadeIn(); return(
-              <div className="rec-card" key={r.id} ref={ref}>
-                <div className="rec-quote">{r.quote}</div>
-                <div className="rec-author">
-                  <div className="rec-avatar">—</div>
-                  <div><div className="rec-name">{r.name}</div><div className="rec-role">{r.role}</div></div>
+        {/* LEADERSHIP & SERVICE */}
+        <Sec id="leadership" label={t.leadLabel} title={t.leadTitle}>
+          <div className="timeline">
+            {t.leadership.map((l,i)=>{ const ref=useFadeIn(); return(
+              <div className="timeline-item" key={i} ref={ref}>
+                <div className="timeline-left">
+                  <div className="timeline-period">{l.period}</div>
+                  <div className="timeline-company">{l.org}</div>
+                </div>
+                <div>
+                  <div className="timeline-title">{l.role}</div>
+                  <div className="timeline-location">{l.location}</div>
+                  <ul className="timeline-bullets">{l.bullets.map((b,j)=><li key={j}>{b}</li>)}</ul>
                 </div>
               </div>
             ); })}
@@ -614,6 +682,28 @@ function App() {
         </Sec>
 
         <hr className="divider"/>
+
+        {/* RECOMMENDATIONS — hidden until real LinkedIn recommendations exist.
+            Fill in T.en.recs / T.ko.recs, then set SHOW_RECS = true at the top of this script. */}
+        {SHOW_RECS && (
+          <React.Fragment>
+            <Sec id="recommendations" label={t.recLabel} title={t.recTitle}>
+              <div className="recs-grid">
+                {t.recs.map(r=>(
+                  <div className="rec-card" key={r.id}>
+                    <div className="rec-quote">{r.quote}</div>
+                    <div className="rec-author">
+                      <div className="rec-avatar">—</div>
+                      <div><div className="rec-name">{r.name}</div><div className="rec-role">{r.role}</div></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Sec>
+
+            <hr className="divider"/>
+          </React.Fragment>
+        )}
 
         {/* CONTACT */}
         <section id="contact" style={{paddingBottom:"100px"}}>
