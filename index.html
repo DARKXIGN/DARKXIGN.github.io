@@ -447,29 +447,11 @@ function Sec({ id, label, title, children }) {
   );
 }
 
-/* ── PHOTO UPLOAD ───────────────────────────────────── */
+/* ── PROFILE PHOTO ──────────────────────────────────── */
 function PhotoUpload() {
-  const [src, setSrc] = useState(null);
-  const inputRef = useRef(null);
-  const handleFile = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const url = URL.createObjectURL(file);
-    setSrc(url);
-  };
   return (
-    <div className="about-photo" onClick={() => inputRef.current.click()}>
-      <input type="file" accept="image/*" ref={inputRef} onChange={handleFile} style={{display:"none"}} />
-      {src
-        ? <img src={src} alt="Profile" />
-        : <div className="about-photo-placeholder">
-            <div className="about-photo-icon">🖼️</div>
-            <div className="about-photo-hint">
-              <strong>Click to upload your photo</strong>
-              JPG, PNG, WEBP supported
-            </div>
-          </div>
-      }
+    <div className="about-photo" style={{cursor:"default", border:"none"}}>
+      <img src="profile.jpg" alt="HyuckJoon Kwon" style={{objectPosition:"center 30%"}} />
     </div>
   );
 }
@@ -570,7 +552,7 @@ function App() {
         <Sec id="about" label={t.aboutLabel} title={t.aboutTitle}>
           <div className="about-grid">
             <div className="about-left">
-              {/* Photo placeholder — click to upload */}
+              {/* Profile photo (profile.jpg in repo root) */}
               <PhotoUpload />
               <div className="about-text">{t.aboutP.map((p,i)=><p key={i}>{p}</p>)}</div>
             </div>
